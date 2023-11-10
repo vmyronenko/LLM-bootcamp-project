@@ -22,13 +22,14 @@ class YoutubeChatbot:
         self.openai_model = "gpt-3.5-turbo"
 
     @st.spinner('Fetching transcript...')
-    def setup_qa_chain(self, url):
+    def setup_qa_chain(self, urls):
         # Load documents
         docs = []
 
         #Fetching Youtube transcripts
-        loader = YoutubeLoader.from_youtube_url(url)
-        docs.extend(loader.load())
+        for link in urls:
+            loader = YoutubeLoader.from_youtube_url(link)
+            docs.extend(loader.load())
 
         # Split documents
         text_splitter = RecursiveCharacterTextSplitter(
@@ -60,16 +61,17 @@ class YoutubeChatbot:
     @utils.enable_chat_history
     def main(self):
         # User Inputs
-        url = st.sidebar.text_input(label='Enter Youtube URLs', value='')
+        url = st.sidebar.text_area(label='Enter Youtube URLs', value='')
+        urls = url.split('\n')
 
-        if not url:
+        if not urls:
             st.error("Please add links to continue!")
             st.stop()
 
         user_query = st.chat_input(placeholder="Ask me anything!")
 
-        if url and user_query:
-            qa_chain = self.setup_qa_chain(url)
+        if urls and user_query:
+            qa_chain = self.setup_qa_chain(urls)
 
             utils.display_msg(user_query, 'user')
         
